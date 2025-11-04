@@ -32,6 +32,7 @@ def send_message(phone_number, message):
     server.login(auth[0], auth[1])
 
     server.sendmail(auth[0], recipient, message)
+    server.quit()
 
 if __name__ == "__main__":
     page = requests.get(URL)
@@ -39,14 +40,18 @@ if __name__ == "__main__":
     driver1_results = soup.find(id="dvr_stat0")
     driver2_results = soup.find(id="dvr_stat1")
 
+    if not driver1_results or not driver2_results:
+      print("Error: Could not find driver status elements on the page")
+      sys.exit(1)
+
     if driver1_results.text not in ["Standstill", "Done"]:
       print("Fail!!")
       print(driver1_results.text)
       send_message(phone_number, driver1_results.text)
-      exit()
+      sys.exit(1)
 
     if driver2_results.text not in ["Standstill", "Done"]:
       print("Fail!!")
       print(driver2_results.text)
       send_message(phone_number, driver2_results.text)
-      exit()
+      sys.exit(1)
