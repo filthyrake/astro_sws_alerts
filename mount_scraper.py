@@ -20,8 +20,8 @@ required_vars = {
 missing = [name for name, value in required_vars.items() if not value]
 if missing:
     print("Error: Missing required environment variables.")
-    print("Please ensure all environment variables are set: PHONE_NUMBER, EMAIL, PASSWORD, SWS_URL")
-    print("See .env.example for reference.")
+    print("Please set all required environment variables before running this script.")
+    print("See .env.example for configuration details.")
     sys.exit(1)
 
 def send_message(phone_number, message):
@@ -42,17 +42,17 @@ if __name__ == "__main__":
     driver2_results = soup.find(id="dvr_stat1")
 
     if not driver1_results or not driver2_results:
-      print("Error: Could not find driver status elements on the page")
-      sys.exit(1)
+        print("Error: Could not find driver status elements on the page")
+        sys.exit(1)
 
     if driver1_results.text not in ["Standstill", "Done"]:
-      print("Fail!!")
-      print(driver1_results.text)
-      send_message(phone_number, driver1_results.text)
-      sys.exit(1)
+        print("Fail!!")
+        print(driver1_results.text)
+        send_message(phone_number, driver1_results.text)
+        sys.exit(1)
 
     if driver2_results.text not in ["Standstill", "Done"]:
-      print("Fail!!")
-      print(driver2_results.text)
-      send_message(phone_number, driver2_results.text)
-      sys.exit(1)
+        print("Fail!!")
+        print(driver2_results.text)
+        send_message(phone_number, driver2_results.text)
+        sys.exit(1)
