@@ -19,8 +19,9 @@ required_vars = {
 }
 missing = [name for name, value in required_vars.items() if not value]
 if missing:
-    print(f"Error: Missing required environment variables: {', '.join(missing)}")
-    print("Please set all required environment variables before running this script.")
+    print("Error: Missing required environment variables.")
+    print("Please ensure all environment variables are set: PHONE_NUMBER, EMAIL, PASSWORD, SWS_URL")
+    print("See .env.example for reference.")
     sys.exit(1)
 
 def send_message(phone_number, message):
