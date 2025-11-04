@@ -19,7 +19,7 @@ required_vars = {
 }
 missing = [name for name, value in required_vars.items() if not value]
 if missing:
-    print("Error: Missing required environment variables.")
+    print(f"Error: Missing required environment variables: {', '.join(missing)}")
     print("Please set all required environment variables before running this script.")
     print("See .env.example for configuration details.")
     sys.exit(1)
@@ -36,7 +36,13 @@ def send_message(phone_number, message):
     server.quit()
 
 if __name__ == "__main__":
-    page = requests.get(URL)
+    try:
+        page = requests.get(URL, timeout=10)
+        page.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        print(f"Error: Failed to fetch the SWS page: {e}")
+        sys.exit(1)
+    
     soup = BeautifulSoup(page.content, "html.parser")
     driver1_results = soup.find(id="dvr_stat0")
     driver2_results = soup.find(id="dvr_stat1")
