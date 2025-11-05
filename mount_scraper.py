@@ -10,20 +10,6 @@ EMAIL = os.getenv("EMAIL")
 PASSWORD = os.getenv("PASSWORD")
 URL = os.getenv("SWS_URL")
 
-# Validate that all required environment variables are set
-required_vars = {
-    "PHONE_NUMBER": phone_number,
-    "EMAIL": EMAIL,
-    "PASSWORD": PASSWORD,
-    "SWS_URL": URL
-}
-missing = [name for name, value in required_vars.items() if not value]
-if missing:
-    print(f"Error: Missing required environment variables: {', '.join(missing)}")
-    print("Please set all required environment variables before running this script.")
-    print("See .env.example for configuration details.")
-    sys.exit(1)
-
 def send_message(phone_number, message):
     recipient = phone_number + "@vtext.com"
     auth = (EMAIL, PASSWORD)
@@ -34,6 +20,20 @@ def send_message(phone_number, message):
         server.sendmail(auth[0], recipient, message)
 
 if __name__ == "__main__":
+    # Validate that all required environment variables are set
+    required_vars = {
+        "PHONE_NUMBER": phone_number,
+        "EMAIL": EMAIL,
+        "PASSWORD": PASSWORD,
+        "SWS_URL": URL
+    }
+    missing = [name for name, value in required_vars.items() if not value]
+    if missing:
+        print(f"Error: Missing required environment variables: {', '.join(missing)}")
+        print("Please set all required environment variables before running this script.")
+        print("See .env.example for configuration details.")
+        sys.exit(1)
+    
     try:
         page = requests.get(URL, timeout=10)
         page.raise_for_status()
