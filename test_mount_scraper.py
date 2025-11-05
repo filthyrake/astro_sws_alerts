@@ -4,7 +4,6 @@ Test suite for mount_scraper.py
 Tests that the module can be imported without environment variables set.
 """
 
-import sys
 import os
 import unittest
 
@@ -21,8 +20,8 @@ class TestModuleImport(unittest.TestCase):
     
     def test_module_imports_without_env_vars(self):
         """Test that mount_scraper can be imported without environment variables set."""
-        # If we got here, the import succeeded
-        self.assertTrue(True)
+        self.assertIsNotNone(mount_scraper)
+        self.assertEqual(type(mount_scraper).__name__, "module")
     
     def test_send_message_function_exists(self):
         """Test that send_message function is available after import."""
@@ -35,6 +34,18 @@ class TestModuleImport(unittest.TestCase):
         self.assertIsNone(mount_scraper.EMAIL)
         self.assertIsNone(mount_scraper.PASSWORD)
         self.assertIsNone(mount_scraper.URL)
+    
+    def test_send_message_validates_inputs(self):
+        """Test that send_message validates required parameters."""
+        # Test with missing phone_number
+        with self.assertRaises(ValueError) as context:
+            mount_scraper.send_message(None, "test message")
+        self.assertIn("phone_number is required", str(context.exception))
+        
+        # Test with missing EMAIL/PASSWORD (they should be None from cleared env vars)
+        with self.assertRaises(ValueError) as context:
+            mount_scraper.send_message("5551234567", "test message")
+        self.assertIn("EMAIL and PASSWORD environment variables must be set", str(context.exception))
 
 
 if __name__ == '__main__':

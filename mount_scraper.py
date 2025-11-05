@@ -11,6 +11,11 @@ PASSWORD = os.getenv("PASSWORD")
 URL = os.getenv("SWS_URL")
 
 def send_message(phone_number, message):
+    if not phone_number:
+        raise ValueError("phone_number is required")
+    if not EMAIL or not PASSWORD:
+        raise ValueError("EMAIL and PASSWORD environment variables must be set")
+    
     recipient = phone_number + "@vtext.com"
     auth = (EMAIL, PASSWORD)
 
