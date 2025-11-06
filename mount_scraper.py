@@ -19,10 +19,27 @@ def send_message(phone_number, message):
     recipient = phone_number + "@vtext.com"
     auth = (EMAIL, PASSWORD)
 
-    with smtplib.SMTP("smtp.gmail.com", 587) as server:
+    server = None
+    try:
+        server = smtplib.SMTP("smtp.gmail.com", 587)
         server.starttls()
         server.login(auth[0], auth[1])
         server.sendmail(auth[0], recipient, message)
+    except smtplib.SMTPAuthenticationError as e:
+        print(f"Failed to authenticate with Gmail - check credentials: {e}")
+        sys.exit(1)
+    except smtplib.SMTPConnectError as e:
+        print(f"Failed to connect to SMTP server: {e}")
+        sys.exit(1)
+    except smtplib.SMTPException as e:
+        print(f"Failed to send SMS: {e}")
+        sys.exit(1)
+    finally:
+        if server:
+            try:
+                server.quit()
+            except Exception:
+                pass  # Ignore errors when closing connection
 
 if __name__ == "__main__":
     # Validate that all required environment variables are set
