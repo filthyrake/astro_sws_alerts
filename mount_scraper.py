@@ -25,8 +25,8 @@ def send_message(phone_number, message):
         server.starttls()
         server.login(auth[0], auth[1])
         server.sendmail(auth[0], recipient, message)
-    except smtplib.SMTPAuthenticationError:
-        print("Failed to authenticate with Gmail - check credentials")
+    except smtplib.SMTPAuthenticationError as e:
+        print(f"Failed to authenticate with Gmail - check credentials: {e}")
         sys.exit(1)
     except smtplib.SMTPException as e:
         print(f"Failed to send SMS: {e}")
