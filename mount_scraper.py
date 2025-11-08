@@ -41,23 +41,21 @@ def send_message(phone_number, message):
             except Exception:
                 pass  # Ignore errors when closing connection
 
-if __name__ == "__main__":
-    # Validate that all required environment variables are set
-    required_vars = {
-        "PHONE_NUMBER": phone_number,
-        "EMAIL": EMAIL,
-        "PASSWORD": PASSWORD,
-        "SWS_URL": URL
-    }
-    missing = [name for name, value in required_vars.items() if not value]
-    if missing:
-        print(f"Error: Missing required environment variables: {', '.join(missing)}")
-        print("Please set all required environment variables before running this script.")
-        print("See .env.example for configuration details.")
-        sys.exit(1)
+def check_driver_status(url, phone_num):
+    """Check driver status from SWS page and send alert if needed.
     
+    Args:
+        url: URL of the SWS page to check
+        phone_num: Phone number to send alerts to
+        
+    Returns:
+        None
+        
+    Raises:
+        SystemExit: If validation fails or drivers are not in valid states
+    """
     try:
-        page = requests.get(URL, timeout=10)
+        page = requests.get(url, timeout=10)
         page.raise_for_status()
     except requests.exceptions.RequestException as e:
         print(f"Error: Failed to fetch the SWS page: {e}")
@@ -74,11 +72,28 @@ if __name__ == "__main__":
     if driver1_results.text not in ["Standstill", "Done"]:
         print("Fail!!")
         print(driver1_results.text)
-        send_message(phone_number, driver1_results.text)
+        send_message(phone_num, driver1_results.text)
         sys.exit(1)
 
     if driver2_results.text not in ["Standstill", "Done"]:
         print("Fail!!")
         print(driver2_results.text)
-        send_message(phone_number, driver2_results.text)
+        send_message(phone_num, driver2_results.text)
         sys.exit(1)
+
+if __name__ == "__main__":
+    # Validate that all required environment variables are set
+    required_vars = {
+        "PHONE_NUMBER": phone_number,
+        "EMAIL": EMAIL,
+        "PASSWORD": PASSWORD,
+        "SWS_URL": URL
+    }
+    missing = [name for name, value in required_vars.items() if not value]
+    if missing:
+        print(f"Error: Missing required environment variables: {', '.join(missing)}")
+        print("Please set all required environment variables before running this script.")
+        print("See .env.example for configuration details.")
+        sys.exit(1)
+    
+    check_driver_status(URL, phone_number)

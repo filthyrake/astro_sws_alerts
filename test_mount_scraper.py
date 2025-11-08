@@ -131,5 +131,103 @@ class TestSMTPErrorHandling(unittest.TestCase):
         mock_server.quit.assert_called_once()
 
 
+class TestHTMLElementValidation(unittest.TestCase):
+    """Test HTML element validation for driver status elements."""
+    
+    def setUp(self):
+        """Set up test environment with mock credentials."""
+        os.environ["EMAIL"] = "test@example.com"
+        os.environ["PASSWORD"] = "test_password"
+        # Reload module to pick up new environment variables
+        import importlib
+        importlib.reload(mount_scraper)
+    
+    def tearDown(self):
+        """Clean up environment variables after tests."""
+        for var in ["EMAIL", "PASSWORD"]:
+            if var in os.environ:
+                del os.environ[var]
+        # Reload module to clear environment variables
+        import importlib
+        importlib.reload(mount_scraper)
+    
+    @patch('mount_scraper.send_message')
+    @patch('mount_scraper.requests.get')
+    def test_both_driver_elements_found(self, mock_get, mock_send):
+        """Test that script continues when both driver elements are found."""
+        # Create mock response with both driver elements present
+        mock_response = MagicMock()
+        mock_response.content = b'''
+        <html>
+            <div id="dvr_stat0">Standstill</div>
+            <div id="dvr_stat1">Done</div>
+        </html>
+        '''
+        mock_get.return_value = mock_response
+        
+        # Should not raise SystemExit since both elements exist with valid statuses
+        try:
+            mount_scraper.check_driver_status("http://example.com/test.html", "5551234567")
+        except SystemExit:
+            self.fail("Script should not exit when both driver elements are found with valid statuses")
+    
+    @patch('mount_scraper.send_message')
+    @patch('mount_scraper.requests.get')
+    def test_driver1_element_missing(self, mock_get, mock_send):
+        """Test that script exits with error when driver1 element is missing."""
+        # Create mock response with driver1 element missing
+        mock_response = MagicMock()
+        mock_response.content = b'''
+        <html>
+            <div id="dvr_stat1">Done</div>
+        </html>
+        '''
+        mock_get.return_value = mock_response
+        
+        # Script should exit with error when driver1 element is missing
+        with self.assertRaises(SystemExit) as context:
+            mount_scraper.check_driver_status("http://example.com/test.html", "5551234567")
+        
+        self.assertEqual(context.exception.code, 1)
+    
+    @patch('mount_scraper.send_message')
+    @patch('mount_scraper.requests.get')
+    def test_driver2_element_missing(self, mock_get, mock_send):
+        """Test that script exits with error when driver2 element is missing."""
+        # Create mock response with driver2 element missing
+        mock_response = MagicMock()
+        mock_response.content = b'''
+        <html>
+            <div id="dvr_stat0">Standstill</div>
+        </html>
+        '''
+        mock_get.return_value = mock_response
+        
+        # Script should exit with error when driver2 element is missing
+        with self.assertRaises(SystemExit) as context:
+            mount_scraper.check_driver_status("http://example.com/test.html", "5551234567")
+        
+        self.assertEqual(context.exception.code, 1)
+    
+    @patch('mount_scraper.send_message')
+    @patch('mount_scraper.requests.get')
+    def test_both_driver_elements_missing(self, mock_get, mock_send):
+        """Test that script exits with error when both driver elements are missing."""
+        # Create mock response with both driver elements missing
+        mock_response = MagicMock()
+        mock_response.content = b'''
+        <html>
+            <div id="some_other_element">Other content</div>
+        </html>
+        '''
+        mock_get.return_value = mock_response
+        
+        # Script should exit with error when both driver elements are missing
+        with self.assertRaises(SystemExit) as context:
+            mount_scraper.check_driver_status("http://example.com/test.html", "5551234567")
+        
+        self.assertEqual(context.exception.code, 1)
+
+
 if __name__ == '__main__':
     unittest.main()
